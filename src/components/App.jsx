@@ -3,7 +3,7 @@ import PokemonForm from './ProkemonForm/ProkemonForm';
 import PokemonInfo from './PokemonInfo/PokemonInfo';
 import css from './App.module.css'
 
-export class App extends Component {
+export default class App extends Component {
   state = {
     pokemonName: '',
   };
