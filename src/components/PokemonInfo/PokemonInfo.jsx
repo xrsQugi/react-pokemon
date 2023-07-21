@@ -1,16 +1,24 @@
-import { Component } from 'react';
-import css from './PokemonInfo.module.css'
+//!styles
+import css from './PokemonInfo.module.css';
+
+//! notification
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+//? --- class component ---
+// import { Component } from 'react';
 
 // export default class PokemonInfo extends Component {
 //   state = {
 //     pokemon: null,
 //     loading: false,
 //     error: false,
+//     status: 'idle'
 //   };
 
-//   componentDidUpdate(prevProps, prevState) {
+//   componentDidUpdate(prevProps) {
 //     if (prevProps.pokemonName !== this.props.pokemonName) {
-//       this.setState({loading: true, pokemon: null, error: false})
+//       this.setState({pokemon: null, status: "pending"})
 //       console.log("помінялось ім'я");
 
 //       setTimeout(() => {
@@ -22,94 +30,118 @@ import css from './PokemonInfo.module.css'
 //               return Promise.reject(new Error(`Немає покемона з іменем ${this.props.pokemonName}!`));
 //             }
 //           })
-//           .then(pokemon => this.setState({ pokemon }))
-//           .then(() => {
-//             this.setState({error: false})
-//           })
+//           .then((pokemon) => this.setState({pokemon, status: "resolved" }))
 //           .catch(error => this.setState({error, status: "rejected"}))
-//           .finally(() => {
-//             this.setState({loading: false})
-//           })
 //       }, 1000)
 //     }
 //   }
 //   render() {
-//     const {pokemon, loading, error} = this.state;
+//     const {pokemon, error, status} = this.state;
 
-//     return (
-//       <div>
-//         {error && <h3>{error.message}</h3>}
-//         {loading && <p>Загружаю...</p>}
-//         {pokemon && (
-//           <div className={css.pokemon_card}>
-//             <img
-//               src={pokemon.sprites.other['official-artwork'].front_default}
-//               alt={pokemon.name}
-//               width="200"
-//             />
-//             <p className={css.pokemon_name}> {pokemon.name}</p>
-//           </div>
-//         )}
-//       </div>
-//     );
+//     //!----- State machine -----
+//     //? ("idle")
+//     //? ("pending")
+//     //? ("resolved")
+//     //? ("rejected")
+
+//     if(status === "pending"){
+//       return <p className={css.loading}>Завантажую...</p>
+//     }
+//     if(status === "rejected"){
+//       return <h3 className={css.error}>{error.message}</h3>
+//     }
+//     if(status === "resolved"){
+//       return (
+//         <div className={css.pokemon_card}>
+//           <img
+//             src={pokemon.sprites.other['official-artwork'].front_default}
+//             alt={pokemon.name}
+//             width="200"
+//           />
+//           <p className={css.pokemon_name}> {pokemon.name}</p>
+//         </div>
+//       )
+//     }
 //   }
 // }
 
+//! --------------------------------------------------------------------------
 
+//? --- hooks ---
+import { useState, useEffect } from 'react';
 
-export default class PokemonInfo extends Component {
-  state = {
-    pokemon: null,
-    loading: false,
-    error: false,
-    status: 'idle'
+export default function PokemonInfo({ pokemonName }) {
+  const Status = {
+    IDLE: 'idle',
+    PENDING: 'pending',
+    RESOLVED: 'resolved',
+    REJECTED: 'rejected',
   };
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.pokemonName !== this.props.pokemonName) {
-      this.setState({pokemon: null, status: "pending"})
-      console.log("помінялось ім'я");
+  const [pokemon, setPokemon] = useState(null);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState(Status.IDLE);
+
+  useEffect(
+    prevProps => {
+      if (!pokemonName) {
+        return;
+      }
+
+      setStatus(Status.PENDING);
 
       setTimeout(() => {
-        fetch(`https://pokeapi.co/api/v2/pokemon/${this.props.pokemonName}`)
+        fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
           .then(response => {
-            if(response.ok){
+            if (response.ok) {
               return response.json();
-            } else{
-              return Promise.reject(new Error(`Немає покемона з іменем ${this.props.pokemonName}!`));
+            } else {
+              toast.error(`Немає покемона з іменем ${pokemonName}!`, {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+              });
+              return Promise.reject(
+                new Error(`Немає покемона з іменем ${pokemonName}!`)
+              );
             }
           })
-          .then((pokemon) => this.setState({pokemon, status: "resolved" }))
-          .catch(error => this.setState({error, status: "rejected"}))
-      }, 1000)
-    }
+          .then(pokemon => {
+            setPokemon(pokemon);
+            setStatus(Status.RESOLVED);
+          })
+          .catch(error => {
+            setError(error);
+            setStatus(Status.REJECTED);
+            
+          });
+      }, 1000);
+    },
+    [pokemonName]
+  );
+
+  if (status === Status.PENDING) {
+    return <p className={css.loading}>Завантажую...</p>;
   }
-  render() {
-    const {pokemon, error, status} = this.state;
-
-    //!----- State machine -----
-    //? ("idle")
-    //? ("pending")
-    //? ("resolved")
-    //? ("rejected")
-
-    if(status === "pending"){
-      return <p className={css.loading}>Завантажую...</p>
-    } 
-    if(status === "rejected"){
-      return <h3 className={css.error}>{error.message}</h3>
-    }
-    if(status === "resolved"){
-      return (
-        <div className={css.pokemon_card}>
-          <img
-            src={pokemon.sprites.other['official-artwork'].front_default}
-            alt={pokemon.name}
-            width="200"
-          />
-          <p className={css.pokemon_name}> {pokemon.name}</p>
-        </div>
-      )
-    }
+  if (status === Status.REJECTED) {
+    return <h3 className={css.error}>{error.message}</h3>;
+  }
+  if (status === Status.RESOLVED) {
+    return (
+      <div className={css.pokemon_card}>
+        <img
+          src={pokemon.sprites.other['official-artwork'].front_default}
+          alt={pokemon.name}
+          width="200"
+        />
+        <p className={css.pokemon_name}> {pokemon.name}</p>
+      </div>
+    );
   }
 }
