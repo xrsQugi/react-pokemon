@@ -1,5 +1,4 @@
 import { Component } from 'react';
-// import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import css from './PokemonInfo.module.css'
 
 // export default class PokemonInfo extends Component {
@@ -20,7 +19,6 @@ import css from './PokemonInfo.module.css'
 //             if(response.ok){
 //               return response.json();
 //             } else{
-//           //  Notify.failure(`Покімона ${this.props.pokemonName} немає`)
 //               return Promise.reject(new Error(`Немає покемона з іменем ${this.props.pokemonName}!`));
 //             }
 //           })
@@ -78,7 +76,6 @@ export default class PokemonInfo extends Component {
             if(response.ok){
               return response.json();
             } else{
-              // Notify.failure(`Покімона ${this.props.pokemonName} немає`)
               return Promise.reject(new Error(`Немає покемона з іменем ${this.props.pokemonName}!`));
             }
           })
