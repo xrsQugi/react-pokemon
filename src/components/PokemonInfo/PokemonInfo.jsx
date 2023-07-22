@@ -88,7 +88,7 @@ export default function PokemonInfo({ pokemonName }) {
         return;
       }
 
-      setStatus(Status.IDLE);
+      setStatus(Status.PENDING);
 
       setTimeout(() => {
         fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
