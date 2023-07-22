@@ -70,18 +70,17 @@ import 'react-toastify/dist/ReactToastify.css';
 //? --- hooks ---
 import { useState, useEffect } from 'react';
 
-export default function PokemonInfo({ pokemonName }) {
-  const Status = {
+const Status = {
     IDLE: 'idle',
     PENDING: 'pending',
     RESOLVED: 'resolved',
     REJECTED: 'rejected',
-  };
+};
 
+export default function PokemonInfo({ pokemonName }) {
   const [pokemon, setPokemon] = useState(null);
   const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState(Status.IDLE);
+  const [status, setStatus] = useState('idle');
 
   useEffect(
     prevProps => {
@@ -89,7 +88,7 @@ export default function PokemonInfo({ pokemonName }) {
         return;
       }
 
-      setStatus(Status.PENDING);
+      setStatus(Status.IDLE);
 
       setTimeout(() => {
         fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`)
